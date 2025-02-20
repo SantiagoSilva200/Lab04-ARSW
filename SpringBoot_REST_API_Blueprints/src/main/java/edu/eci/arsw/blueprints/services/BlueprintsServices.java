@@ -13,8 +13,11 @@ import edu.eci.arsw.blueprints.persistence.BlueprintsPersistence;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import edu.eci.arsw.blueprints.filter.BluePrintFilter;
 
 /**
  *
@@ -24,7 +27,10 @@ import org.springframework.stereotype.Service;
 public class BlueprintsServices {
    
     @Autowired
-    BlueprintsPersistence bpp=null;
+    BlueprintsPersistence bpp;
+
+    @Autowired
+    private BluePrintFilter filter;
     
     public void addNewBlueprint(Blueprint bp){
         try {
@@ -33,11 +39,19 @@ public class BlueprintsServices {
             e.printStackTrace();
         }
     }
-    
-    public Set<Blueprint> getAllBlueprints(){
-        return null;
+
+    public Set<Blueprint> getAllBlueprints() throws BlueprintPersistenceException {
+        Set<Blueprint> blueprints = bpp.getAllBluePrints();
+        Set<Blueprint> filteredBlueprints = blueprints.stream().map(filter::filter).collect(Collectors.toSet());
+
+        for (Blueprint bp : filteredBlueprints) {
+            System.out.println("🔹 Blueprint filtrado: " + bp.getPoints());
+        }
+
+        return filteredBlueprints;
     }
-    
+
+
     /**
      * 
      * @param author blueprint's author
@@ -46,7 +60,7 @@ public class BlueprintsServices {
      * @throws BlueprintNotFoundException if there is no such blueprint
      */
     public Blueprint getBlueprint(String author,String name) throws BlueprintNotFoundException{
-        return bpp.getBlueprint(author,name);
+        return filter.filter(bpp.getBlueprint(author, name));
     }
     
     /**
@@ -56,7 +70,8 @@ public class BlueprintsServices {
      * @throws BlueprintNotFoundException if the given author doesn't exist
      */
     public Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException, BlueprintPersistenceException {
-        return bpp.getBlueprintsByAuthor(author);
+        Set<Blueprint> blueprints = bpp.getBlueprintsByAuthor(author);
+        return blueprints.stream().map(filter::filter).collect(Collectors.toSet());
     }
     
 }

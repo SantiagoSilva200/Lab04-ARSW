@@ -5,10 +5,13 @@
  */
 package edu.eci.arsw.blueprints.model;
 
+import lombok.Data;
+
 /**
  *
  * @author hcadavid
  */
+
 public class Point {
    
     private int x;
